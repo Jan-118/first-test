@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>FHIR Patient Create</title>
+</head>
+<body>
+
+<h2>建立病人資料</h2>
+
+姓名: <input type="text" id="name"><br><br>
+性別:
+<select id="gender">
+    <option value="male">男</option>
+    <option value="female">女</option>
+</select><br><br>
+
+生日: <input type="date" id="birthDate"><br><br>
+
+<button onclick="createPatient()">送出</button>
+
+<pre id="result"></pre>
+
+<script>
+function createPatient() {
+
+    const name = document.getElementById("name").value;
+    const gender = document.getElementById("gender").value;
+    const birthDate = document.getElementById("birthDate").value;
+
+    const patientData = {
+        resourceType: "Patient",
+        name: [{
+            use: "official",
+            family: name
+        }],
+        gender: gender,
+        birthDate: birthDate
+    };
+
+    fetch("https://hapi.fhir.org/baseR4/Patient", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/fhir+json"
+        },
+        body: JSON.stringify(patientData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("result").textContent =
+            "成功建立病人！ID是: " + data.id;
+    })
+    .catch(error => {
+        document.getElementById("result").textContent =
+            "錯誤: " + error;
+    });
+}
+</script>
+
+</body>
+</html>
