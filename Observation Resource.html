@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>上傳心跳資料</title>
+</head>
+<body>
+
+<h2>上傳心跳紀錄</h2>
+
+病人ID: <input type="text" id="patientId"><br><br>
+
+心跳 (次/分鐘): <input type="number" id="heartbeat"><br><br>
+
+<button onclick="uploadObservation()">送出</button>
+
+<pre id="result"></pre>
+
+<script>
+function uploadObservation() {
+
+    const patientId = document.getElementById("patientId").value;
+    const heartbeat = document.getElementById("heartbeat").value;
+
+    const observationData = {
+        resourceType: "Observation",
+        status: "final",
+        category: [{
+            coding: [{
+                system: "http://terminology.hl7.org/CodeSystem/observation-category",
+                code: "vital-signs",
+                display: "Vital Signs"
+            }]
+        }],
+        code: {
+            coding: [{
+                system: "http://loinc.org",
+                code: "8867-4",
+                display: "Heart rate"
+            }]
+        },
+        subject: {
+            reference: "Patient/" + patientId
+        },
+        effectiveDateTime: new Date().toISOString(),
+        valueQuantity: {
+            value: parseInt(heartbeat),
+            unit: "beats/minute",
+            system: "http://unitsofmeasure.org",
+            code: "/min"
+        }
+    };
+
+    fetch("https://hapi.fhir.org/baseR4/Observation", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/fhir+json"
+        },
+        body: JSON.stringify(observationData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById("result").textContent =
+            "成功上傳心跳紀錄！Observation ID: " + data.id;
+    })
+    .catch(error => {
+        document.getElementById("result").textContent =
+            "錯誤: " + error;
+    });
+}
+</script>
+
+</body>
+</html>
